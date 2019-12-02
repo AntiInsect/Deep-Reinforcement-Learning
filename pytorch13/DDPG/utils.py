@@ -27,12 +27,12 @@ class OUNoise(object):
 # NOTICE that here we choose the following implementation for better manipulation
 # of the type of each element separately
 class ReplayBuffer(object):
-    def __init__(self, max_size, n_states, n_actions):
+    def __init__(self, max_size, state_dim, action_dim):
         self.mem_size = max_size
         self.mem_cntr = 0
-        self.state_mem = np.zeros((self.mem_size, n_states))
-        self.next_state_mem = np.zeros((self.mem_size, n_states))
-        self.action_mem = np.zeros((self.mem_size, n_actions))
+        self.state_mem = np.zeros((self.mem_size, state_dim))
+        self.next_state_mem = np.zeros((self.mem_size, state_dim))
+        self.action_mem = np.zeros((self.mem_size, action_dim))
         self.reward_mem = np.zeros(self.mem_size)
         self.terminated_mem = np.zeros(self.mem_size, dtype=np.int32)
         

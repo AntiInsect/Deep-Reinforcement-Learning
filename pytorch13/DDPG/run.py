@@ -9,8 +9,8 @@ NUM_EPISODE = 1000
 # create new env
 env = gym.make('LunarLanderContinuous-v2')
 # generate agent
-agent = Agent(alpha=0.000025, beta=0.00025, n_states=8, tau=0.001, env=env,
-              batch_size=64,  layer1_size=400, layer2_size=300, n_actions=2)
+agent = Agent(env=env, alpha=0.000025, beta=0.00025, tau=0.001, gamma=0.99)
+
 # store the reward of each episode (tracjectory)
 scores = []
 

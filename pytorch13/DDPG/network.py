@@ -13,17 +13,17 @@ import torch.optim as optim
 
 # the critic network to learn how to estimate the "max action-value"
 class Critic(nn.Module):
-    def __init__(self, lr, n_states, fc1_dims, fc2_dims, n_actions):
+    def __init__(self, lr, state_dim, l1_dim, l2_dim, action_dim):
 
         # recive general purpose variables here, leave sepecial ones to sepecific functions
         super(Critic, self).__init__()
         
         # network parameters
         self.lr = lr
-        self.n_states = n_states
-        self.fc1_dims = fc1_dims
-        self.fc2_dims = fc2_dims
-        self.n_actions = n_actions
+        self.state_dim = state_dim
+        self.l1_dim = l1_dim
+        self.l2_dim = l2_dim
+        self.action_dim = action_dim
 
         # the pytorch network construction routine
         self.build_network()
@@ -58,7 +58,7 @@ class Critic(nn.Module):
     # the feature of each layer 
     def build_network(self):
         # the first fully connected layer
-        self.fc1 = nn.Linear(self.n_states, self.fc1_dims)
+        self.fc1 = nn.Linear(self.state_dim, self.l1_dim)
 
         # "f" here means the "fan-in" of the layer in the original paper
         f1 = 1 / np.sqrt(self.fc1.weight.data.size()[0])
@@ -70,27 +70,27 @@ class Critic(nn.Module):
         # according to the original paper, we need to introduce batch normalization
         # here to avoid the effect the covariate shift of the underlying of the low
         # dimensional input
-        self.bn1 = nn.LayerNorm(self.fc1_dims)
+        self.bn1 = nn.LayerNorm(self.l1_dim)
 
         # the second fully connected layers
-        self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
+        self.fc2 = nn.Linear(self.l1_dim, self.l2_dim)
         f2 = 1 / np.sqrt(self.fc2.weight.data.size()[0])
         T.nn.init.uniform_(self.fc2.weight.data, -f2, f2)
         T.nn.init.uniform_(self.fc2.bias.data, -f2, f2)
-        self.bn2 = nn.LayerNorm(self.fc2_dims)
+        self.bn2 = nn.LayerNorm(self.l2_dim)
 
         # according to the original paper, we do not include the action until the
         # 2nd hidden layer, so we need a separate layer here
         # NOTICE the input and output dims here 
-        self.separate_action_layer = nn.Linear(self.n_actions, self.fc2_dims)
+        self.separate_action_layer = nn.Linear(self.action_dim, self.l2_dim)
 
         # according to the original paper, we add this extra layer to
         # ensure the initial outputs for the policy and value estimates were near zero.
         f3 = .003
 
-        # NOTICE that here is "fc2_dims" not the "n_actions"
+        # NOTICE that here is "l2_dim" not the "action_dim"
         # we name the final layer "Q" to indicate the esimation of Q-value 
-        self.q = nn.Linear(self.fc2_dims, 1)
+        self.q = nn.Linear(self.l2_dim, 1)
         T.nn.init.uniform_(self.q.weight.data, -f3, f3)
         T.nn.init.uniform_(self.q.bias.data, -f3, f3)
 
@@ -101,13 +101,13 @@ class Critic(nn.Module):
 
 # the Actor network 
 class Actor(nn.Module):
-    def __init__(self, lr, n_states, fc1_dims, fc2_dims, n_actions):
+    def __init__(self, lr, state_dim, l1_dim, l2_dim, action_dim):
         super(Actor, self).__init__()
         self.lr = lr
-        self.n_states = n_states
-        self.fc1_dims = fc1_dims
-        self.fc2_dims = fc2_dims
-        self.n_actions = n_actions
+        self.state_dim = state_dim
+        self.l1_dim = l1_dim
+        self.l2_dim = l2_dim
+        self.action_dim = action_dim
 
         self.buleprint_network()
         self.set_optimizer()
@@ -127,20 +127,20 @@ class Actor(nn.Module):
         return action
 
     def buleprint_network(self):
-        self.fc1 = nn.Linear(self.n_states, self.fc1_dims)
+        self.fc1 = nn.Linear(self.state_dim, self.l1_dim)
         f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
         T.nn.init.uniform_(self.fc1.weight.data, -f1, f1)
         T.nn.init.uniform_(self.fc1.bias.data, -f1, f1)
-        self.bn1 = nn.LayerNorm(self.fc1_dims)
+        self.bn1 = nn.LayerNorm(self.l1_dim)
 
-        self.fc2 = nn.Linear(self.fc1_dims, self.fc2_dims)
+        self.fc2 = nn.Linear(self.l1_dim, self.l2_dim)
         f2 = 1./np.sqrt(self.fc2.weight.data.size()[0])
         T.nn.init.uniform_(self.fc2.weight.data, -f2, f2)
         T.nn.init.uniform_(self.fc2.bias.data, -f2, f2)
-        self.bn2 = nn.LayerNorm(self.fc2_dims)
+        self.bn2 = nn.LayerNorm(self.l2_dim)
 
         f3 = .003
-        self.mu = nn.Linear(self.fc2_dims, self.n_actions)
+        self.mu = nn.Linear(self.l2_dim, self.action_dim)
         T.nn.init.uniform_(self.mu.weight.data, -f3, f3)
         T.nn.init.uniform_(self.mu.bias.data, -f3, f3)
 

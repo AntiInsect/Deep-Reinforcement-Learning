@@ -12,9 +12,9 @@ from network import Critic, Actor
 
 # the DDPG agent
 class Agent(object):
-    def __init__(self, alpha, beta, n_states, tau, env, gamma=0.99,
-                 n_actions=2, max_replay_size=1000000, layer1_size=400,
-                 layer2_size=300, batch_size=64):
+    def __init__(self, env, alpha, beta, tau, gamma,
+                 state_dim = 8, action_dim = 2, max_replay_size = 1000000,
+                 l1_dim = 400, l2_dim = 300, batch_size=64):
 
         self.env = env
         self.alpha = alpha # learning rate for actor network
@@ -22,10 +22,10 @@ class Agent(object):
         self.tau = tau # polyak averaging parameter
         self.gamma = gamma # discount factor of reward
 
-        self.n_states = n_states
-        self.n_actions = n_actions
-        self.layer1_size = layer1_size
-        self.layer2_size = layer2_size
+        self.state_dim = state_dim
+        self.action_dim = action_dim
+        self.l1_dim = l1_dim
+        self.l2_dim = l2_dim
         self.batch_size = batch_size
         self.max_replay_size = max_replay_size
 
@@ -36,15 +36,15 @@ class Agent(object):
 
     def build_agent(self):
         # build the actor-critic network and also their target networks
-        self.actor = Actor(self.alpha, self.n_states, self.layer1_size, self.layer2_size, self.n_actions)
+        self.actor = Actor(self.alpha, self.state_dim, self.l1_dim, self.l2_dim, self.action_dim)
         self.target_actor = copy.deepcopy(self.actor)
-        self.critic = Critic(self.beta, self.n_states, self.layer1_size, self.layer2_size, self.n_actions)
+        self.critic = Critic(self.beta, self.state_dim, self.l1_dim, self.l2_dim, self.action_dim)
         self.target_critic = copy.deepcopy(self.critic)
 
         # build the replaybuffer
-        self.replaybuffer = ReplayBuffer(self.max_replay_size, self.n_states, self.n_actions)
+        self.replaybuffer = ReplayBuffer(self.max_replay_size, self.state_dim, self.action_dim)
         # build the OUNoise for action selection 
-        self.noise = OUNoise(self.n_actions)
+        self.noise = OUNoise(self.action_dim)
 
     def act(self, state):
         # if we only want to predict (forward), it is no need to use "train()" mode
@@ -82,7 +82,9 @@ class Agent(object):
         self.update_critic(states, actions, rewards, next_states, dones)
         # update the actor network
         self.update_actor(states, actions)
-
+        # update target network parameters
+        self.update_target_network()
+        
     def update_critic(self, states, actions, rewards, next_states, dones):
         # update the critic network
         self.target_actor.eval()
@@ -93,7 +95,6 @@ class Agent(object):
         critic_values = self.critic.forward(states, actions)
 
         target_critic_values = [rewards[j] + self.gamma * target_critic_values[j] * dones[j] for j in range(self.batch_size)]
-
         # reshape the variable
         target_critic_values = T.tensor(target_critic_values)
         target_critic_values = target_critic_values.view(self.batch_size, 1)
@@ -122,9 +123,6 @@ class Agent(object):
         actor_loss = T.mean( - self.critic.forward(states, actions))
         actor_loss.backward()
         self.actor.optimizer.step()
-
-        # update target network parameters
-        self.update_target_network()
 
     def update_target_network(self, tau=None):
         if tau is None:
