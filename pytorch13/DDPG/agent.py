@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import copy
 
 import torch as T 
 import torch.nn as nn
@@ -35,10 +36,10 @@ class Agent(object):
 
     def build_agent(self):
         # build the actor-critic network and also their target networks
-        self.actor = Actor(self.alpha, self.n_states, self.layer1_size, self.layer2_size, self.n_actions, 'Actor')
-        self.target_actor = Actor(self.alpha, self.n_states, self.layer1_size, self.layer2_size, self.n_actions, 'TargetActor')
-        self.critic = Critic(self.beta, self.n_states, self.layer1_size, self.layer2_size, self.n_actions, 'Critic')
-        self.target_critic = Critic(self.beta, self.n_states, self.layer1_size, self.layer2_size, self.n_actions, 'TargetCritic')
+        self.actor = Actor(self.alpha, self.n_states, self.layer1_size, self.layer2_size, self.n_actions)
+        self.target_actor = copy.deepcopy(self.actor)
+        self.critic = Critic(self.beta, self.n_states, self.layer1_size, self.layer2_size, self.n_actions)
+        self.target_critic = copy.deepcopy(self.critic)
 
         # build the replaybuffer
         self.replaybuffer = ReplayBuffer(self.max_replay_size, self.n_states, self.n_actions)
@@ -49,9 +50,9 @@ class Agent(object):
         # if we only want to predict (forward), it is no need to use "train()" mode
         # "eval()" turn off the BatchNormalization and Dropout
         self.actor.eval()
-        state = T.tensor(state, dtype=T.float).to(self.actor.device)
-        action = self.actor.forward(state).to(self.actor.device)
-        noisy_action = action + T.tensor(self.noise(), dtype=T.float).to(self.actor.device)
+        state = T.tensor(state, dtype=T.float)
+        action = self.actor.forward(state)
+        noisy_action = action + T.tensor(self.noise(), dtype=T.float)
         return noisy_action.cpu().detach().numpy()
 
     # store transition into the replay buffer
@@ -61,11 +62,11 @@ class Agent(object):
     def sample_replaybuffer(self):
         # sample from the ReplayBuffer
         states, actions, rewards, next_states, dones = self.replaybuffer.sample(self.batch_size)
-        states = T.tensor(states, dtype=T.float).to(self.critic.device)
-        actions = T.tensor(actions, dtype=T.float).to(self.critic.device)
-        rewards = T.tensor(rewards, dtype=T.float).to(self.critic.device)
-        next_states = T.tensor(next_states, dtype=T.float).to(self.critic.device)
-        dones = T.tensor(dones).to(self.critic.device)
+        states = T.tensor(states, dtype=T.float)
+        actions = T.tensor(actions, dtype=T.float)
+        rewards = T.tensor(rewards, dtype=T.float)
+        next_states = T.tensor(next_states, dtype=T.float)
+        dones = T.tensor(dones)
 
         return states, actions, rewards, next_states, dones
 
@@ -94,7 +95,7 @@ class Agent(object):
         target_critic_values = [rewards[j] + self.gamma * target_critic_values[j] * dones[j] for j in range(self.batch_size)]
 
         # reshape the variable
-        target_critic_values = T.tensor(target_critic_values).to(self.critic.device)
+        target_critic_values = T.tensor(target_critic_values)
         target_critic_values = target_critic_values.view(self.batch_size, 1)
 
         # set the mode to "train" (turn up BatchNormalization and Dropout)

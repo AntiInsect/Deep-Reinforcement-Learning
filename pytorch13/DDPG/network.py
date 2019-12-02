@@ -13,7 +13,7 @@ import torch.optim as optim
 
 # the critic network to learn how to estimate the "max action-value"
 class Critic(nn.Module):
-    def __init__(self, lr, n_states, fc1_dims, fc2_dims, n_actions, name):
+    def __init__(self, lr, n_states, fc1_dims, fc2_dims, n_actions):
 
         # recive general purpose variables here, leave sepecial ones to sepecific functions
         super(Critic, self).__init__()
@@ -28,7 +28,6 @@ class Critic(nn.Module):
         # the pytorch network construction routine
         self.build_network()
         self.set_optimizer()
-        self.activate_network()
 
     # for this function, we should give more problem-specific names to
     # help us understand the processing better
@@ -99,15 +98,10 @@ class Critic(nn.Module):
     def set_optimizer(self):
         self.optimizer = optim.Adam(self.parameters(), lr=self.lr)
 
-    # regular routinue, set the device and send the network to it
-    def activate_network(self):
-        self.device = T.device('cpu')
-        self.to(self.device)
-
 
 # the Actor network 
 class Actor(nn.Module):
-    def __init__(self, lr, n_states, fc1_dims, fc2_dims, n_actions, name):
+    def __init__(self, lr, n_states, fc1_dims, fc2_dims, n_actions):
         super(Actor, self).__init__()
         self.lr = lr
         self.n_states = n_states
@@ -117,7 +111,6 @@ class Actor(nn.Module):
 
         self.buleprint_network()
         self.set_optimizer()
-        self.activate_network()
 
     def forward(self, state):
         action = self.fc1(state)
@@ -153,7 +146,3 @@ class Actor(nn.Module):
 
     def set_optimizer(self):
         self.optimizer = optim.Adam(self.parameters(), lr=self.lr)
-
-    def activate_network(self):
-        self.device = T.device('cpu')
-        self.to(self.device)
