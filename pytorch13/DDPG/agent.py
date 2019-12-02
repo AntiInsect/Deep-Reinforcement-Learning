@@ -116,9 +116,9 @@ class Agent(object):
         # here we use the output from the actor network NOT the noisy action
         # because we only need to enforce exploration in the when actual interactions
         # happen in the environment
-        actions = self.actor.forward(states).to(self.actor.device)
+        actions = self.actor.forward(states)
         self.actor.train()
-        actor_loss = T.mean( - self.critic.forward(states, actions) * actions)
+        actor_loss = T.mean( - self.critic.forward(states, actions))
         actor_loss.backward()
         self.actor.optimizer.step()
 
