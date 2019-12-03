@@ -21,9 +21,9 @@ class Critic(nn.Module):
         # network parameters
         self.lr = lr
         self.state_dim = state_dim
+        self.action_dim = action_dim
         self.l1_dim = l1_dim
         self.l2_dim = l2_dim
-        self.action_dim = action_dim
 
         # the pytorch network construction routine
         self.build_network()
@@ -32,31 +32,38 @@ class Critic(nn.Module):
     # for this function, we should give more problem-specific names to
     # help us understand the processing better
     def forward(self, state, action):
+        return self.q1_forward(state, action), self.q2_forward(state, action)
 
-        state_value = self.fc1(state)
-        # we'd better to do the batch norm first before the relu
-        state_value = self.bn1(state_value)
-        # DO not forget the activation function
-        state_value = F.relu(state_value)
-
-        state_value = self.fc2(state_value)
-        state_value = self.bn2(state_value)
-        
+    def q1_forward(self, state, action):
+        s1 = F.relu(self.bn1(self.fc1(state)))
+        s1 = self.bn2(self.fc2(s1))
         # according to the original paper, we include the actions here
-        action_value = self.separate_action_layer(action)
-        action_value = F.relu(action_value)
-
+        a1 = F.relu(self.separate_action_layer(action))
         # combine the state_value and action_value
-        state_action_value = F.relu(T.add(state_value, action_value))
-        # get the output which is the estimation of max action-value
-        state_action_value = self.q(state_action_value)
+        q1 = F.relu(T.add(s1, a1))
+        q1 = self.q(q1)
+        
+        return q1
 
-        return state_action_value
+    def q2_forward(self, state, action):
+        s2 = F.relu(self.bn3(self.fc3(state)))
+        s2 = self.bn4(self.fc4(s2))
+        # according to the original paper, we include the actions here
+        a2 = F.relu(self.separate_action_layer2(action))
+        # combine the state_value and action_value
+        q2 = F.relu(T.add(s2, a2))
+        q2 = self.q2(q2)
+        
+        return q2
+
+    def build_network(self):
+        self.build_network1()
+        self.build_network2()
 
     # setup the architecture and as the name goes, we have not
     # actually make any connection between layers but just scratch
     # the feature of each layer 
-    def build_network(self):
+    def build_network1(self):
         # the first fully connected layer
         self.fc1 = nn.Linear(self.state_dim, self.l1_dim)
 
@@ -93,6 +100,24 @@ class Critic(nn.Module):
         self.q = nn.Linear(self.l2_dim, 1)
         T.nn.init.uniform_(self.q.weight.data, -f3, f3)
         T.nn.init.uniform_(self.q.bias.data, -f3, f3)
+
+    def build_network2(self):
+        self.fc3 = nn.Linear(self.state_dim, self.l1_dim)
+        f3 = 1 / np.sqrt(self.fc3.weight.data.size()[0])
+        T.nn.init.uniform_(self.fc3.weight.data, -f3, f3)
+        T.nn.init.uniform_(self.fc3.bias.data, -f3, f3)
+        self.bn3 = nn.LayerNorm(self.l1_dim)
+        self.fc4 = nn.Linear(self.l1_dim, self.l2_dim)
+        f4 = 1 / np.sqrt(self.fc4.weight.data.size()[0])
+        T.nn.init.uniform_(self.fc4.weight.data, -f4, f4)
+        T.nn.init.uniform_(self.fc4.bias.data, -f4, f4)
+        self.bn4 = nn.LayerNorm(self.l2_dim)
+
+        self.separate_action_layer2 = nn.Linear(self.action_dim, self.l2_dim)
+        f5 = .003
+        self.q2 = nn.Linear(self.l2_dim, 1)
+        T.nn.init.uniform_(self.q2.weight.data, -f5, f5)
+        T.nn.init.uniform_(self.q2.bias.data, -f5, f5)
 
     # set network optimizer, Adam is the to-go choice
     def set_optimizer(self):
