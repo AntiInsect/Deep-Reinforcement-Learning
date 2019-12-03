@@ -1,9 +1,6 @@
-import os
-import numpy as np
 import copy
 
 import torch as T 
-import torch.nn as nn
 import torch.nn.functional as F
 
 from utils import OUNoise, ReplayBuffer
@@ -17,6 +14,8 @@ class Agent(object):
                  l1_dim = 400, l2_dim = 300, batch_size=64):
 
         self.env = env
+        self.max_action = float(env.action_space.high[0])
+
         self.alpha = alpha # learning rate for actor network
         self.beta = beta # learning rate for critic network
         self.tau = tau # polyak averaging parameter
@@ -25,16 +24,15 @@ class Agent(object):
         self.update_actor_count = 0
         self.update_actor_freq  = 2 
 
+        self.policy_noise = .2
+        self.noise_clip = .5
+
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.l1_dim = l1_dim
         self.l2_dim = l2_dim
         self.batch_size = batch_size
         self.max_replay_size = max_replay_size
-
-        self.policy_noise = .2
-        self.noise_clip = .5
-        self.max_action = float(env.action_space.high[0])
 
         # build the agent
         self.build_agent()
@@ -43,9 +41,9 @@ class Agent(object):
 
     def build_agent(self):
         # build the actor-critic network and also their target networks
-        self.actor = Actor(self.alpha, self.state_dim, self.l1_dim, self.l2_dim, self.action_dim)
+        self.actor = Actor(self.state_dim, self.action_dim, self.l1_dim, self.l2_dim,self.alpha)
         self.target_actor = copy.deepcopy(self.actor)
-        self.critic = Critic(self.beta, self.state_dim, self.l1_dim, self.l2_dim, self.action_dim)
+        self.critic = Critic(self.state_dim, self.action_dim, self.l1_dim, self.l2_dim,self.beta)
         self.target_critic = copy.deepcopy(self.critic)
 
         # build the replaybuffer
@@ -54,11 +52,8 @@ class Agent(object):
         self.noise = OUNoise(self.action_dim)
 
     def act(self, state):
-        # if we only want to predict (forward), it is no need to use "train()" mode
-        # "eval()" turn off the BatchNormalization and Dropout
-        self.actor.eval()
         state = T.tensor(state, dtype=T.float)
-        action = self.actor.forward(state)
+        action = self.actor(state)
         noisy_action = action + T.tensor(self.noise(), dtype=T.float)
         return noisy_action.cpu().detach().numpy()
 
@@ -92,7 +87,7 @@ class Agent(object):
 
         if self.update_actor_count % self.update_actor_freq == 0:
             # update the actor network
-            self.update_actor(states, actions)
+            self.update_actor(states)
             # update target network parameters
             self.update_target_network()
         
@@ -105,7 +100,10 @@ class Agent(object):
             # Compute the target Q value
             target_Q1, target_Q2 = self.target_critic(next_states, next_action)
             target_Q = T.min(target_Q1, target_Q2)
-            target_Q = rewards + dones * self.gamma * target_Q
+            target_Q = [rewards[j] + self.gamma * target_Q[j] * dones[j] for j in range(self.batch_size)]
+            # reshape the variable
+            target_Q = T.tensor(target_Q)
+            target_Q = target_Q.view(self.batch_size, 1)
         
         # Get current Q estimates
         current_Q1, current_Q2 = self.critic(states, actions)
@@ -116,60 +114,24 @@ class Agent(object):
         critic_loss.backward()
         self.critic.optimizer.step()
 
-    # def update_critic(self, states, actions, rewards, next_states, dones):
-    #     # update the critic network
-    #     self.target_actor.eval()
-    #     target_actions = self.target_actor.forward(next_states)
-    #     self.target_critic.eval()
-    #     target_critic_values = self.target_critic.forward(next_states, target_actions)
-    #     self.critic.eval()
-    #     critic_values = self.critic.forward(states, actions)
-
-    #     target_critic_values = [rewards[j] + self.gamma * target_critic_values[j] * dones[j] for j in range(self.batch_size)]
-    #     # reshape the variable
-    #     target_critic_values = T.tensor(target_critic_values)
-    #     target_critic_values = target_critic_values.view(self.batch_size, 1)
-
-    #     # set the mode to "train" (turn up BatchNormalization and Dropout)
-    #     self.critic.train()
-    #     # In PyTorch, we need to set the gradients to zero before starting to do backpropragation 
-    #     # because PyTorch accumulates the gradients on subsequent backward passes
-    #     self.critic.optimizer.zero_grad()
-    #     # calculate the MSE loss 
-    #     critic_loss = F.mse_loss(target_critic_values, critic_values)
-    #     # backpropagation and optimize
-    #     critic_loss.backward()
-    #     self.critic.optimizer.step()
-
-    def update_actor(self, states, actions):
-        # NOTICE that here we want to "forward",so no need to use model.train()
-        self.critic.eval()
+    def update_actor(self, states):
         self.actor.optimizer.zero_grad()
 
         # here we use the output from the actor network NOT the noisy action
         # because we only need to enforce exploration in the when actual interactions
         # happen in the environment
-        actions = self.actor.forward(states)
-        self.actor.train()
-        actor_loss = T.mean( - self.critic.q1_forward(states, actions))
+        actions = self.actor(states)
+        actor_loss = - self.critic.q1_forward(states, actions).mean()
         actor_loss.backward()
         self.actor.optimizer.step()
 
     def update_target_network(self, tau=None):
-        if tau is None:
-            tau = self.tau
+        tau = self.tau if tau is None else tau
 
-        # polyak averaging to update
-        # update the target critic network
-        critic_state_dict = dict(self.critic.named_parameters())
-        target_critic_dict = dict(self.target_critic.named_parameters())
-        for name in critic_state_dict:
-            critic_state_dict[name] = tau * critic_state_dict[name].clone() + (1 - tau) * target_critic_dict[name].clone()
-        self.target_critic.load_state_dict(critic_state_dict)
+        # polyak averaging to update        
+        for param, target_param in zip(self.critic.parameters(), self.target_critic.parameters()):
+            target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
 
         # update the target actor network
-        actor_state_dict = dict(self.actor.named_parameters())
-        target_actor_dict = dict(self.target_actor.named_parameters())
-        for name in actor_state_dict:
-            actor_state_dict[name] = tau * actor_state_dict[name].clone() + (1 - tau) * target_actor_dict[name].clone()
-        self.target_actor.load_state_dict(actor_state_dict)
+        for param, target_param in zip(self.actor.parameters(), self.target_actor.parameters()):
+            target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
