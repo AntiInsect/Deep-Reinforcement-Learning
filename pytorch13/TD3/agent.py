@@ -97,7 +97,7 @@ class Agent(object):
             noise = (T.randn_like(actions) * self.policy_noise).clamp(-self.noise_clip, self.noise_clip)
             next_action = (self.target_actor(next_states) + noise).clamp(-self.max_action, self.max_action)
             
-            # Compute the target Q value
+            # Compute the target Q value and use the minimum of them
             target_Q1, target_Q2 = self.target_critic(next_states, next_action)
             target_Q = T.min(target_Q1, target_Q2)
             target_Q = [rewards[j] + self.gamma * target_Q[j] * dones[j] for j in range(self.batch_size)]
@@ -109,29 +109,31 @@ class Agent(object):
         current_Q1, current_Q2 = self.critic(states, actions)
         # Compute critic loss
         critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
+
         # Optimize the critic
         self.critic.optimizer.zero_grad()
         critic_loss.backward()
         self.critic.optimizer.step()
 
     def update_actor(self, states):
-        self.actor.optimizer.zero_grad()
-
         # here we use the output from the actor network NOT the noisy action
         # because we only need to enforce exploration in the when actual interactions
         # happen in the environment
         actions = self.actor(states)
         actor_loss = - self.critic.q1_forward(states, actions).mean()
+        
+        # Optimize the actor
+        self.actor.optimizer.zero_grad()
         actor_loss.backward()
         self.actor.optimizer.step()
 
     def update_target_network(self, tau=None):
         tau = self.tau if tau is None else tau
 
-        # polyak averaging to update        
+        # polyak averaging to update the target critic network
         for param, target_param in zip(self.critic.parameters(), self.target_critic.parameters()):
             target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
 
-        # update the target actor network
+        # polyak averaging to update the target actor network
         for param, target_param in zip(self.actor.parameters(), self.target_actor.parameters()):
             target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)

@@ -90,10 +90,12 @@ class Agent(object):
         target_critic_values = T.tensor(target_critic_values)
         target_critic_values = target_critic_values.view(self.batch_size, 1)
 
+        critic_loss = F.mse_loss(target_critic_values, critic_values)
+
         # In PyTorch, we need to set the gradients to zero before starting to do backpropragation 
         # because PyTorch accumulates the gradients on subsequent backward passes
+        # optimize the critic
         self.critic.optimizer.zero_grad()
-        critic_loss = F.mse_loss(target_critic_values, critic_values)
         critic_loss.backward()
         self.critic.optimizer.step()
 
@@ -101,19 +103,26 @@ class Agent(object):
         # here we use the output from the actor network NOT the noisy action
         # because we only need to enforce exploration in the when actual interactions
         # happen in the environment
-        self.actor.optimizer.zero_grad()
+
         actions = self.actor(states)
+
+        # NOTICE here we do not multiply "actor_loss" with " self.actor(states)"
+        # because we here take gradient with respect to the parameter not
+        # first part to action and second to parameter (refer to the original paper)
         actor_loss = - self.critic(states, actions).mean()
+
+        # optimize the actor
+        self.actor.optimizer.zero_grad()
         actor_loss.backward()
         self.actor.optimizer.step()
 
     def update_target_network(self, tau=None):
         tau = self.tau if tau is None else tau
 
-        # polyak averaging to update        
+        # polyak averaging to update the target critic network
         for param, target_param in zip(self.critic.parameters(), self.target_critic.parameters()):
             target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
 
-        # update the target actor network
+        # polyak averaging to update the target actor network
         for param, target_param in zip(self.actor.parameters(), self.target_actor.parameters()):
             target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
