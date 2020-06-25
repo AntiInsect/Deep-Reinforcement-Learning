@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Welcome to Omega Gomoku AI.</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <script src="{{ url_for('static', filename='js/socket.io_2.2.0.js') }}"></script>
     <script src="{{ url_for('static', filename='js/start.js') }}"></script>
@@ -11,7 +10,7 @@
 <body onload="board_init({{ board_size }})">
     <div style="text-align: center;">
         <a href="{{ url_for('configure.configure') }}">
-            <input type="button" value="返回配置 Back"></a>
+            <input type="button" value="Back to setting"></a>
 
         <br><br>
         <div id="board-div" style="height: {{ board_size*40 }}px">
@@ -25,26 +24,26 @@
 
         <br><br>
 
-        <input id="start-button" type="button" value="开始游戏 Start" onclick="start_game()">
+        <input id="start-button" type="button" value=" Start" onclick="start_game()">
         <br><br>
 
         <div id="player1-div">
-            <h4>执黑 Black: {{ player1_name }}</h4>
+            <h4> Black: {{ player1_name }}</h4>
             <p id="player1-desc">
                 {% autoescape false %}
                 {{ player1_desc | replace('\n', '<br>') }}
                 {% endautoescape %}
             </p>
-            <h4 id="player1-running">思考中 running...</h4>
+            <h4 id="player1-running"> running...</h4>
         </div>
         <div id="player2-div">
-            <h4>执白 White: {{ player2_name }}</h4>
+            <h4> White: {{ player2_name }}</h4>
             <p id="player2-desc">
                 {% autoescape false %}
                 {{ player2_desc | replace('\n', '<br>') }}
                 {% endautoescape %}
             </p>
-            <h4 id="player2-running">思考中 running...</h4>
+            <h4 id="player2-running"> running...</h4>
         </div>
     </div>
 

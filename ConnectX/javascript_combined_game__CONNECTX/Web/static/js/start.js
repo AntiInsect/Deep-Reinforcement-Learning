@@ -20,14 +20,14 @@ socket.on('game_start', function () {
     human_player = 0;
     board_steps.clear();
     console.log('game start');
-    document.getElementById("start-button").value = "停止游戏 Stop";
+    document.getElementById("start-button").value = "Stop";
 });
 
 socket.on('game_stop', function () {
     human_player = 0;
     board_steps.clear();
     console.log('game stop');
-    document.getElementById("start-button").value = "开始游戏 Start";
+    document.getElementById("start-button").value = "Start";
 });
 
 socket.on('board_step', function (json) {
@@ -50,17 +50,17 @@ socket.on('turn_to', function (player) {
 });
 
 socket.on('player1_running', function (output) {
-    document.getElementById("player1-running").innerHTML = "思考中 running... " + output;
+    document.getElementById("player1-running").innerHTML = "running... " + output;
 });
 
 socket.on('player2_running', function (output) {
-    document.getElementById("player2-running").innerHTML = "思考中 running... " + output;
+    document.getElementById("player2-running").innerHTML = "running... " + output;
 });
 
 socket.on('take_human_action', function (player) {
     human_player = player;
     document.getElementById("player" + player + "-running").innerHTML =
-        "请点击棋盘落子<br>Please click on the board";
+        "Please click on the board";
 });
 
 function send_human_action(action) {
@@ -70,13 +70,13 @@ function send_human_action(action) {
 
 socket.on('game_over', function (winner) {
     human_player = 0;
-    document.getElementById("start-button").value = "开始游戏 Start";
+    document.getElementById("start-button").value = "Start";
     if (winner === 1) {
-        alert("黑子获胜 Black wins!");
+        alert("Black wins!");
     } else if (winner === 2) {
-        alert("白子获胜 White wins!");
+        alert("White wins!");
     } else {
-        alert("平局");
+        alert("Draw!");
     }
 });
 
@@ -112,7 +112,6 @@ function board_init(board_size) {
 function start_game() {
     socket.emit('start_game', 'start');
 }
-
 
 var current_transparent_piece = [];
 

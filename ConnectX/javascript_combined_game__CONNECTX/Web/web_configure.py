@@ -10,9 +10,9 @@ from Player.Human import Human
 from Player.AI_MCTS import AI_MCTS
 from Player.AI_MCTS_Net import AI_MCTS_Net
 from AI.Network.PolicyValueNet_from_junxiaosong import PolicyValueNet_from_junxiaosong
+from AI.Network.PolicyValueNet_ResNet import PolicyValueNet_ResNet
 
 player = {}
-
 
 @bp.route("/", methods=['POST', 'GET'])
 def configure():
@@ -32,12 +32,12 @@ def ready_to_start(player_conf: (dict, dict)):
         if conf[0] == "1":  # Human
             player[player_index] = Human(name=name)
         elif conf[0] == "2":  # AI with pure MCTS
-            search_times = 2000 if conf[2] == -1 else int(conf[2])
+            search_times = 100 if conf[2] == -1 else int(conf[2])
             greedy_value = 0.5 if conf[3] == -1 else float(conf[3])
             player[player_index] = AI_MCTS(name=name, search_times=search_times, greedy_value=greedy_value,
                                            is_output_analysis=False, is_output_running=False)
         elif conf[0] == "3":  # AI with neural network
-            search_times = 2000 if conf[2] == -1 else int(conf[2])
+            search_times = 100 if conf[2] == -1 else int(conf[2])
             greedy_value = 0.5 if conf[3] == -1 else float(conf[3])
             model_select[player_index].set_record_path(record_index=int(conf[6]) - 1)
             if conf[4] == "1":  # network

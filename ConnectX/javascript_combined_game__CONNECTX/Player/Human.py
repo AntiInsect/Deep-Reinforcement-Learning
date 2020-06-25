@@ -36,7 +36,7 @@ class Human(Player):
                 print("The input format is incorrect. Please try again.\n")
                 continue
 
-            # 执行。 Execute.
+            # Execute.
             if not board.step(action):
                 print("Cannot move here. Please try again.\n")
                 continue

@@ -27,10 +27,9 @@ class web_select:
 
     def get_all_record_name(self, model_index: int):
         """
-        根据用户选择的模型检测模型记录。
         Check model records based on the model selected by the user.
-        :param model_index: 模型序号。 The index of model.
-        :return: [<str>] 所有模型记录。 All the model record.
+        :param model_index: The index of model.
+        :return: [<str>] All the model record.
         """
         model_path = self.all_model_path[model_index]
         self.all_record_path = sorted(item for item in model_path.glob('*.h5'))

@@ -3,6 +3,7 @@ import pathlib
 from configure import Configure
 from AI.Network.PolicyValueNet_from_junxiaosong import PolicyValueNet_from_junxiaosong
 from AI.Network.PolicyValueNet_ResNet import PolicyValueNet_ResNet
+import numpy as np
 
 
 def select(prompt, allowed_input):
@@ -112,11 +113,16 @@ def select_network(is_training=False, specified_network=0, specified_model_name=
     :param specified_model_name: Specified model.
     :return: <Network> network.
     """
-    allowed_input = [1]
-    network_selected = select("Please select the neural network you want to use. Press <Ctrl-C> to exit.\n"
-                              "1: Neural network provided by [junxiaosong]\n"
-                              ": ", allowed_input=allowed_input) \
-        if specified_network not in allowed_input else specified_network
+    allowed_input = [1, 2]
+    
+    if specified_network not in allowed_input:
+        network_selected = select("Please select the neural network you want to use. Press <Ctrl-C> to exit.\n"
+                                  "1: Neural network provided by [junxiaosong]\n"
+                                  "2: Residual Neural network\n"
+                                  ": ", allowed_input=allowed_input) 
+    else:
+        network_selected = specified_network
+
     if network_selected == 1:
         is_new_model, model_dir, model_record_path = \
             select_model("Model/PolicyValueNet_from_junxiaosong", is_training, specified_model_name)
@@ -169,7 +175,7 @@ def select_model(dir: str, is_training=False, specified_model_name=""):
     if model_selected == 0:
         while True:
             new_name = input("Please enter a new model name. Press <Ctrl-C> to exit.\n"
-                             ": ")
+                             ": ") + str(np.random.rand())
             if len(new_name) == 0:
                 print("Model name is empty, please try again.\n")
                 continue

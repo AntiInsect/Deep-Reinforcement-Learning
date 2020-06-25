@@ -71,7 +71,7 @@ def run_configure():
         break
 
     while True:
-        input3 = input("Config 3: Please input the AI search times. [Y/y] output, [N/n] not output.\n"
+        input3 = input("Config 3: [Y/y] output, [N/n] not output.\n"
                        "AI is output analysis ({}) = ".format(AI_is_output_analysis))
         if len(input3) == 0:
             pass

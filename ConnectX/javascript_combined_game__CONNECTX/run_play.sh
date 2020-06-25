@@ -26,7 +26,7 @@ do
     continue
     ;;
   2)
-    python start.py
+    python start_from_console.py
     continue
     ;;
   3)

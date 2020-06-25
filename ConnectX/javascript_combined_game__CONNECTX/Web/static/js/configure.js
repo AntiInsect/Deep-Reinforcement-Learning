@@ -13,7 +13,7 @@ function request(url, json, successCallback) {
 
 const select_row5_html = function (section, list) {
     const head = "<h4 id=\"select" + section + "-5-title\">" + section +
-        "-5. 请选择想要使用的网络模型。 Please select the network model you want to use.</h4>\n";
+        "-5. Please select the network model you want to use.</h4>\n";
     let content = "";
     for(let i = 0; i < list.length; i++)
     {
@@ -26,7 +26,7 @@ const select_row5_html = function (section, list) {
 
 const select_row6_html = function (section, list) {
     const head = "<h4 id=\"select" + section + "-6-title\">" + section +
-        "-6. 请选择想要使用的模型记录。 Please select the model record you want to use.</h4>\n";
+        "-6. Please select the model record you want to use.</h4>\n";
     let content = "";
     for(let i = 0; i < list.length; i++)
     {
@@ -99,7 +99,7 @@ function selected(section, row, value) {
             break;
         case 4:
             enable("select" + section + "-5", "select" + section + "-5-input-1");
-            document.getElementById("select" + section + "-5").innerHTML = "<h4>加载中... Loading...</h4>";
+            document.getElementById("select" + section + "-5").innerHTML = "<h4>Loading...</h4>";
             request("/configure/models", {"player" : section - 1, "network" : value}, function (responseText) {
                 let arr = JSON.parse(responseText);
                 document.getElementById("select" + section + "-5").innerHTML = select_row5_html(section, arr);
@@ -108,7 +108,7 @@ function selected(section, row, value) {
             break;
         case 5:
             enable("select" + section + "-6", "select" + section + "-6-input-1");
-            document.getElementById("select" + section + "-6").innerHTML = "<h4>加载中... Loading...</h4>";
+            document.getElementById("select" + section + "-6").innerHTML = "<h4>Loading...</h4>";
             request("/configure/records", {"player" : section - 1, "model" : value - 1}, function (responseText) {
                 let arr = JSON.parse(responseText);
                 document.getElementById("select" + section + "-6").innerHTML = select_row6_html(section, arr);
@@ -126,8 +126,7 @@ function validateForm() {
         const select1 = document.forms["configure"]["select" + i + "-1"].value;
         if (select0 === "" || select1 === "")
         {
-            alert("选项 " + i + " 或 " + i + "-1 未填写\n" +
-                "select " + i + " or " + i + "-1 unfilled.");
+            alert("select " + i + " or " + i + "-1 unfilled.");
             return false;
         }
         if (select0 !== "1")
@@ -136,13 +135,11 @@ function validateForm() {
                 const select2 = document.forms["configure"]["select" + i + "-2"].value;
                 const select3 = document.forms["configure"]["select" + i + "-3"].value;
                 if (select2 === "" || select3 === "") {
-                    alert("选项 " + i + "-2 或 " + i + "-3 未填写\n" +
-                        "select " + i + "-2 or " + i + "-3 unfilled.");
+                    alert("select " + i + "-2 or " + i + "-3 unfilled.");
                     return false;
                 }
             } catch (e) {
-                alert("选项 " + i + "-2 或 " + i + "-3 未填写\n" +
-                    "select " + i + "-2 or " + i + "-3 unfilled.");
+                alert("select " + i + "-2 or " + i + "-3 unfilled.");
                 return false;
             }
         }
@@ -153,13 +150,11 @@ function validateForm() {
                 const select5 = document.forms["configure"]["select" + i + "-5"].value;
                 const select6 = document.forms["configure"]["select" + i + "-6"].value;
                 if (select4 === "" || select5 === "" || select6 === "") {
-                    alert("选项 " + i + "-4 或 " + i + "-5 或 " + i + "-6 未填写\n" +
-                        "select " + i + "-4 or " + i + "-5 or " + i + "-6 unfilled.");
+                    alert("select " + i + "-4 or " + i + "-5 or " + i + "-6 unfilled.");
                     return false;
                 }
             } catch (e) {
-                alert("选项 " + i + "-4 或 " + i + "-5 或 " + i + "-6 未填写\n" +
-                    "select " + i + "-4 or " + i + "-5 or " + i + "-6 unfilled.");
+                alert("select " + i + "-4 or " + i + "-5 or " + i + "-6 unfilled.");
                 return false;
             }
 

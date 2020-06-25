@@ -60,7 +60,7 @@ def play_web_game(is_stop, player1: Player, player2: Player, turn_to, send_board
                                              running_output_function=send_player2_running, is_stop=is_stop)
             send_board_step(2, action)
 
-        # 游戏是否结束。 Game over?
+        # Game over?
         is_over, winner = board.result()
         if is_over:
             game_over(winner)

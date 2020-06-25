@@ -6,7 +6,10 @@ app.config['SECRET_KEY'] = 'secret!'
 
 @app.route('/')
 def welcome():
-    return render_template('welcome.html')
+    return render_template('configure.html')
+
+# def welcome():
+#     return render_template('welcome.html')
 
 
 from Web import web_configure

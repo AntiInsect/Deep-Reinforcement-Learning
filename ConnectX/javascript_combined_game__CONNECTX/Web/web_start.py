@@ -8,12 +8,6 @@ import Game.Board as BOARD
 from Web import web_configure
 from Web.web_game_thread import web_game_thread
 
-# from gevent import monkey
-# monkey.patch_all()
-
-# import eventlet
-# eventlet.monkey_patch()
-
 game_thread = None
 human_action = ()
 
