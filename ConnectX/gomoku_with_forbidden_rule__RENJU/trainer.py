@@ -90,7 +90,7 @@ class Trainer(object):
         #                 entropy,
         #                 explained_var_old,
         #                 explained_var_new
-        #         ))
+        #         )
 
         return loss, entropy
 
@@ -100,12 +100,16 @@ class Trainer(object):
         game_data = Trainer.get_equi_data(data)
         self.bucket.extend(game_data)
 
+        loss = entropy = 0
+
         # train the network
         print('The total amount data we have: %d' %len(self.bucket))
         if len(self.bucket) > 512:
             train_data = random.sample(self.bucket, 512)
             train_start = time.time()
-            self.policy_update(train_data)
+
+            loss, entropy = self.policy_update(train_data)
+            
             train_cost = time.time() - train_start
             self.time_sum += train_cost
             print("Accumulated training time: {:2f} s".format(self.time_sum))
@@ -113,5 +117,7 @@ class Trainer(object):
 
         if self.time_sum > 120:
             self.time_sum = 0
-            print("save model! We do this every 2 minute ... ")
+            print("save model! We do this every 2 minute of training ... ")
             self.pv_net.save_model()
+
+        return loss, entropy
