@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from gobang import evaluation,searcher
+from game import evaluation,searcher
 from learn import Field,QLearning
 import pickle
 import random
 
-b=Field()  
+b = Field()  
 QL = QLearning(b)
-output1 = open('output1.txt', 'rb')
+output1 = open('output.txt', 'rb')
 history = pickle.load(output1)  
 QL.add_record(history)
 record2 = []
@@ -27,11 +27,11 @@ while q:
     best_actions = []
     value = e.evaluate(b.field_data,2)
     print(value)
-    if value<-9900:
+    if value < -9900:
         score,row,col=s.search(1,1)
         choice = (row,col)
         print("About to Win")
-    if value>9900:
+    if value > 9900:
         score,row,col=s.search(1,1)
         choice = (row,col)
         print("About to Lose")           

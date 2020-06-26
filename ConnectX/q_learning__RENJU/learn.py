@@ -3,7 +3,7 @@
 
 import copy
 import random
-from gobang import chessboard, evaluation, searcher
+from game import chessboard, evaluation, searcher
 import pickle
 
 
@@ -215,11 +215,10 @@ if __name__ == "__main__":
     a = {}
     for i in range(LEARNING_COUNT):
             print("----- Episode "+str(i)+"-----")
-            b=Field()
-            
+            b = Field()
             QL = QLearning(b)
             QL.add_record(a)
             QL.learn()
             a = QL.Qvalue
             E_GREEDY_RATIO = E_GREEDY_RATIO - (0.1/LEARNING_COUNT)
-    pickle.dump( a, open( "output1.txt", "wb" ) )
+    pickle.dump( a, open( "output.txt", "wb" ) )
