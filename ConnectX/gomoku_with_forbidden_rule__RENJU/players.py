@@ -8,7 +8,7 @@ class Human(object):
         None
     
     def get_action(self, board):
-        location = input("Your move: (11 to ff)")
+        location = input("Your move: (11 to 88)")
         # You can resign
         if location == 'RESIGN':
             return None, None

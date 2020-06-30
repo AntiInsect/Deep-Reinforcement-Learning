@@ -321,7 +321,6 @@ class RenjuBoard(object):
         
         def expand_vcf(board): 
             collect = []
-            # 这里检查对方是否可能获胜，也就是是否有对方的冲四要挡
             oppo_win = [] 
             # for i in range(1,16):
             #     for j in range(1,16):
@@ -334,21 +333,19 @@ class RenjuBoard(object):
                     count_four,defense = board.isFour([i,j],attacker)
                     if count_four > 0 and (attacker == RenjuBoard.WHITE_STONE or not board.isForbidden([i,j])):
                         collect.append([ [i,j] , defense])
-            #走到这里的话，自己肯定是没连5， 检查对方的冲四点吧。
             if len(oppo_win) > 1:
-                return False,[] #如果对方反冲四，而且还不止一个点，凉了
-            if len(oppo_win) == 1:#如果对方反冲四，看看能不能再反冲四吧
+                return False,[] 
+            if len(oppo_win) == 1:
                 for _c in collect:
                     if oppo_win[0] == _c[0]:
                         return False,[ _c.copy() ]
-                return False,[] #几个冲四点都没匹配，并不能反冲四，则此局面的确没有可行方案
+                return False,[]
             return False,collect
 
         while True:
             win , availables = expand_vcf(self)
             if win :
                 break
-            #一个优化，如果len(vcf_path) == 0 而且 availables也是空的，那么就是第一个局面就发现全盘无冲四，直接返回失败。
             if len(vcf_path) == 0 and len(availables) == 0:
                 return None , ''
             expands.append(availables)
@@ -370,17 +367,12 @@ class RenjuBoard(object):
             vcf_path.append(next_try)
             expands.append(not_expanded)
             if defender == RenjuBoard.BLACK_STONE and self.isForbidden(next_try[1]):
-            # 如果防守出现了禁手，那也是获胜了。 设置win 然后break
                 win = next_try[1]
                 win_by_forbidden = True
                 break
-            # 走冲四
             self.setStone(attacker,next_try[0])
-            # 走防守
             self.setStone(defender,next_try[1])
-        # 这里检测win，拼接返回，
         if win:
-            # 最后一手是win
             for move_pair in vcf_path:
                 return_str += RenjuBoard.coordinate2pos(move_pair[0])
                 return_str += RenjuBoard.coordinate2pos(move_pair[1])
@@ -414,7 +406,6 @@ class RenjuBoard(object):
         self.setStone(color,coordinate)
         return is_end, winner
 
-    #检测棋盘上指定点如果放下指定颜色的棋子，是否获胜。
     def checkWin(self,coordinate,color):
         #coordinate = self.pos2coordinate(position)
         if color == RenjuBoard.WHITE_STONE:
