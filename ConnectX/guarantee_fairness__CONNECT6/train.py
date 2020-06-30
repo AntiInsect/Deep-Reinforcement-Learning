@@ -202,8 +202,7 @@ class TrainPipeline():
                                                     +'_'+str(self.board_width)
                                                     +'_'+str(self.n_in_row)+
                                                     '_best_policy_'+output_file_name+'.model')
-                    if (self.best_win_ratio == 1.0 and
-                            self.pure_mcts_playout_num < 50000):
+                    if self.best_win_ratio == 1.0 and self.pure_mcts_playout_num < 50000:
                         self.pure_mcts_playout_num += 1000
                         self.best_win_ratio = 0.0
         loss_file.close()
@@ -217,9 +216,12 @@ if __name__ == '__main__':
     use_gpu = False
     n_playout = 800
     is_shown = False
-    output_file_name = str(np.random.rand())
+    output_file_name = "6_26-" + str(np.random.rand())
+    # output_file_name = "10_10_6_625-0.5717621621502478"
+
     game_batch_number = 1500
-    init_model_name = None
+    # init_model_name = None
+    init_model_name = "model/10_10_6_best_policy_10_10_6_625-0.5717621621502478.model"
     
     training_pipeline = TrainPipeline(
         board_height=height,

@@ -220,11 +220,12 @@ class Game(object):
         p1, p2 = self.board.players
         states, mcts_probs, current_players = [], [], []
 
+        print()
         print("Start Self-playing ... ")
         counter = 0
         while True:
             counter += 1
-            print("%d Hands of one game ... " %counter)
+            # print("%d Hands of one game ... " %counter)
 
             move, move_probs = player.get_action(self.board, temp=temp, return_prob=1)
             # store the data

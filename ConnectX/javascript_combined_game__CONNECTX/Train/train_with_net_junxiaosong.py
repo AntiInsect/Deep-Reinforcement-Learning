@@ -40,6 +40,16 @@ def train_with_net_junxiaosong(network: PolicyValueNet_from_junxiaosong, allow_u
     # Check_point times per game, save model and evaluate network.
     check_point = 50
 
+
+    ###############################
+    # individual save the loss and entropy
+    loss_file = 'loss.log'
+    entropy_file = 'entropy.log'
+    log_loss = open(network.model_dir + loss_file, mode="a", encoding="utf-8")
+    log_entropy = open(network.model_dir + entropy_file, mode="a", encoding="utf-8")
+    ###############################
+
+
     all_play_data = collections.deque(maxlen=10000)
     all_play_data_count = 0
     player = AI_MCTS_Net(policy_value_function=network.predict,
@@ -113,9 +123,14 @@ def train_with_net_junxiaosong(network: PolicyValueNet_from_junxiaosong, allow_u
                 # Get loss.
                 loss = network.evaluate(x_label=board_inputs, y_label=(all_action_probs, values))
                 loss = loss[0]
-
                 # Get entropy.
                 entropy = network.get_entropy(x_label=board_inputs)
+
+                ###############################
+                # individual save the loss and entropy
+                np.savetxt(log_loss, [loss], fmt='%1.4e')
+                np.savetxt(log_entropy, [entropy], fmt='%1.4e')
+                ###############################
 
                 for train_step in range(num_train_steps):
 
@@ -156,7 +171,7 @@ def train_with_net_junxiaosong(network: PolicyValueNet_from_junxiaosong, allow_u
                                             search_times=AI_mcts_search_times, greedy_value=5.0,
                                             is_output_analysis=False, is_output_running=False)
                 win_times, lose_times, draw_times = 0, 0, 0
-                for j in range(10):
+                for j in range(5):
                     if j % 2 == 0:
                         winner = start_until_game_over(training_mcts, pure_mcts)
                         if winner == BOARD.o:
@@ -180,7 +195,7 @@ def train_with_net_junxiaosong(network: PolicyValueNet_from_junxiaosong, allow_u
                                        format(j + 1, win_times, lose_times, draw_times))
 
                 # Calculate the win rate.
-                current_win_ratio = win_times / 10.0
+                current_win_ratio = win_times / 5.0
                 if current_win_ratio > win_ratio:
                     win_ratio = current_win_ratio
                     print("New record of win rate!")
