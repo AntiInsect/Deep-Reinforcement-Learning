@@ -216,7 +216,8 @@ class MCTS(object):
         temp: temperature parameter in (0, 1] controls the level of exploration
         """
         conclusion = False
-        for n in tqdm(range(self._n_playout), ascii=True, desc='Running Rollouts'):
+        # for n in tqdm(range(self._n_playout), ascii=True, desc='Running Rollouts'):
+        for n in range(self._n_playout):
             
             # open debug
             # if n % 100 == 0:
@@ -225,7 +226,7 @@ class MCTS(object):
             state_copy = copy.deepcopy(state)
             conclusion = self._playout(state_copy)
             if conclusion:
-                print("got conclusion on root")
+                # print("got conclusion on root")
                 break
 
         if conclusion:
@@ -248,9 +249,13 @@ class MCTS(object):
             # calc the move probabilities based on visit counts at the root node
             act_visits = [(act, node._n_visits)
                         for act, node in self._root._children.items()]
-        acts, visits = zip(*act_visits)
-        act_probs = softmax(1.0/temp * np.log(np.array(visits) + 1e-10))
-        return acts, act_probs
+        
+        try:
+            acts, visits = zip(*act_visits)
+            act_probs = softmax(1.0/temp * np.log(np.array(visits) + 1e-10))
+            return acts, act_probs
+        except:
+            return None, None
 
     def update_with_move(self, board,last_move):
         """Step forward in the tree, keeping everything we already know
@@ -272,7 +277,7 @@ class MCTS(object):
         try:
             probs[legal_positions.index(act)] = 1
         except ValueError:
-            probs[:] = 1/len(legal_positions)
+            probs[:] = 1/(len(legal_positions) + 10**(-5))
         return zip(legal_positions, probs)
 
     def __str__(self):

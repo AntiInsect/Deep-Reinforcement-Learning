@@ -19,13 +19,20 @@ entropy_file = './entropy.log'
 log_loss = open(loss_file, mode="a", encoding="utf-8")
 log_entropy = open(entropy_file, mode="a", encoding="utf-8")
 
+counter = 0
+
 while True:
+    counter += 1
+    print("Round %d" %counter)
     print('Start game playing ... ')
     winner, game_data = game.do_play()
     print('Start feeding data to the trainer ... ')
     loss, entropy = trainer.feed(game_data)
-    np.savetxt(log_loss, [loss], fmt='%1.4e')
-    np.savetxt(log_entropy, [entropy], fmt='%1.4e')
+    # np.savetxt(log_loss, [loss], fmt='%1.4e')
+    # np.savetxt(log_entropy, [entropy], fmt='%1.4e')
+    log_loss.write(str(loss)+"\n")
+    log_entropy.write(str(entropy)+"\n")
+
     player.reset_player()
 
 

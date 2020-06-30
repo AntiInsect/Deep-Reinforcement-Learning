@@ -115,9 +115,9 @@ class Trainer(object):
             print("Accumulated training time: {:2f} s".format(self.time_sum))
             print("a single batch train time cost: {:2f} s".format(train_cost))
 
-        if self.time_sum > 120:
+        if self.time_sum > 120 * 10:
             self.time_sum = 0
-            print("save model! We do this every 2 minute of training ... ")
+            print("save model! We do this every 10 minute of training ... ")
             self.pv_net.save_model()
 
         return loss, entropy

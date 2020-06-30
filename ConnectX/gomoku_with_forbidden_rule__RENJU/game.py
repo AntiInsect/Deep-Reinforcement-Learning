@@ -27,7 +27,7 @@ class Game(object):
             if move is None:
                 end = True
                 winner = (RenjuBoard.WHITE_WIN if self.board.get_current_player() else RenjuBoard.BLACK_WIN)
-                print ("player: ",debug_stone," resigns.")
+                # print ("player: ",debug_stone," resigns.")
             else:
                 # store the data
                 states.append(self.board.current_state())
@@ -37,11 +37,14 @@ class Game(object):
                 
                 # open debug board which the game interface
                 # print ("player: ", debug_stone)
-                self.board._debug_board()
+                # self.board._debug_board()
                 
                 end, winner = self.board.game_end()
 
+
+
             if end:
+                self.board._debug_board()
                 total_moves = len(states)
                 if winner == RenjuBoard.DRAW:
                     winner_map = [ 0 for _i in range(total_moves)]
