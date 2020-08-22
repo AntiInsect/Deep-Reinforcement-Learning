@@ -1,0 +1,28 @@
+# week27
+
+- Finish all basic topics in CS285 following the agenda of last week
+- Learn theoretical analysis of Reinforcement Learning
+    - Standford CS234: Reinforcement Learning, a PHD course which new researchers attend
+    - So, focus on the questions and new ideas from the class
+    - Finished Lecture 1 and 2
+- Baysian Network
+    - Main resources come from Berkeley CS188
+    - Joint Distribution Calculation, Baysian Inference and Independence
+- Main Machine Learning techniques review
+    - SVM
+        - Maximum Marginal Classifier
+        - Support Vector Classifier
+        - Support Vector Machine and Regularized Logistic Regression
+    - MCTS
+        - compared to MinMax (also implemented this)
+        - UCB algorithm (Chernoff Technique)
+        - Code Review of tensorflow's minigo code
+    - Bacth Normalization
+        - Main resources come from Andrew Ng's course
+- Review Papers all over again
+    - after Midterm, I started to notice that my previous way of reading paper is quite inefficient. I have over-emphasized the details of every paper I met which made me lost directions as the process went. Though I made some rules for myself about how to select and read an important  or a less important one, I could only tell which one is essential after going through some Berkeley and Standford online courses.
+- Reinforcement Learning Regular Work Setup
+    - Since I do have limit time after class, I can barely find enough time to finish a relative bigger project to practice the knowledge learnt from books or online materials which makes me forget the basic ideas and equations more easily.
+    - From this week, I began to setup a daily basis review routine to improve memory of reinforcement learning knowledge.
+        - RL : an introduction — review and take notes again
+        - David Silver — watch video and take notes again
