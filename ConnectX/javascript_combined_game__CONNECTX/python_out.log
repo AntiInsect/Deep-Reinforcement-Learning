@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "train.py", line 2, in <module>
-    from console_select import select_network
-  File "/Users/updrew/localwork/repo/owned/Deep-Reinforcement-Learning/ConnectX/javascript_combined_game__CONNECTX/console_select.py", line 34
-    def select_yes_or_no(prompt, default: bool):
-                                        ^
-SyntaxError: invalid syntax

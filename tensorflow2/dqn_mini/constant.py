@@ -1,7 +1,0 @@
-"""
-constant.py
-"""
-
-DQN_EPISODES = 1000
-DDQN_EPISODES = 5000
-DQN_BATCH_EPISODES = 1000

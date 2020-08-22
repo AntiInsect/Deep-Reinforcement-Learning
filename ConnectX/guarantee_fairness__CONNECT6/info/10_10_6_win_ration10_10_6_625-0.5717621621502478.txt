@@ -1,2 +1,0 @@
-self-play number , pure_MCTS rollouts number, winning rate
-50,1000,0.3

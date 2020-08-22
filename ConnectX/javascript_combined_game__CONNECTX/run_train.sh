@@ -1,1 +1,0 @@
-nohup python -u train.py 1 3-24-16:56 5000
